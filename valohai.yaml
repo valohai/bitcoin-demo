@@ -11,5 +11,5 @@
       - name: throttle_delay
         type: integer
         pass-as: --throttle_delay={v}
-        default: turku,tampere,helsinki
+        default: 3
         optional: false
