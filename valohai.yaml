@@ -1,0 +1,15 @@
+- step:
+    name: datapull
+    image: python:3.7
+    command: python raw_data_pull.py
+    parameters:
+      - name: cities
+        type: string
+        pass-as: --cities={v}
+        default: turku,tampere,helsinki
+        optional: false
+      - name: throttle_delay
+        type: integer
+        pass-as: --throttle_delay={v}
+        default: turku,tampere,helsinki
+        optional: false
