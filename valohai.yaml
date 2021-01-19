@@ -1,7 +1,7 @@
 - step:
     name: datapull
     image: python:3.7
-    command: python raw_data_pull.py
+    command: python raw_data_pull.py {parameters}
     parameters:
       - name: cities
         type: string
