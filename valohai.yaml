@@ -15,9 +15,21 @@
         pass-as: --throttle_delay={v}
         default: 3
         optional: false
-  - pipeline:
-      name: datapull-pipeline
-      nodes:
-        - name: datapull
-          type: execution
-          step: datapull
+- step:
+    name: hello
+    image: python:3.7
+    command:
+      - echo "Hello!"
+    inputs:
+      - name: hello
+- pipeline:
+    name: datapull-pipeline
+    nodes:
+      - name: datapull
+        type: execution
+        step: datapull
+      - name: helloworld
+        type: execution
+        step: hello
+    edges:
+      - [datapull.output.*, helloworld.input.hello]
