@@ -13,7 +13,7 @@
         pass-as: --lookbehind={v}
         default: 10
     inputs:
-      - name: historicals
+      - name: data
 - step:
     name: train
     image: python:3.7
@@ -46,7 +46,8 @@
       - echo "Transfer training..."
     inputs:
       - name: model
-      - name: historical
+      - name: data
+      - name: labels
 - pipeline:
     name: full-pipeline
     nodes:
@@ -106,16 +107,12 @@
       - [datapull_ltc.output.data*, preprocess_ltc.input.data]
       - [preprocess_eth.output.data*, train_eth.input.data]
       - [preprocess_eth.output.labels*, train_eth.input.labels]
+      - [train_full.output.model*, train_eth.input.model]
       - [preprocess_xrp.output.data*, train_xrp.input.data]
       - [preprocess_xrp.output.labels*, train_xrp.input.labels]
+      - [train_full.output.model*, train_xrp.input.model]
       - [preprocess_ltc.output.data*, train_ltc.input.data]
       - [preprocess_ltc.output.labels*, train_ltc.input.labels]
-      - [preprocess_full.output.labels*, train_full.input.labels]
-      - [train_full.output.model*, train_eth.input.model]
-      - [train_full.output.model*, train_xrp.input.model]
-      - [train_full.output.model*, train_ltc.input.model]
-      - [train_full.output.model*, train_eth.input.model]
-      - [train_full.output.model*, train_xrp.input.model]
       - [train_full.output.model*, train_ltc.input.model]
 #      - [train_eth.output.model*, deploy_eth.file.predict_eth.model]
 #      - [train_xrp.output.model*, deploy_xrp.file.predict_xrp.model]
