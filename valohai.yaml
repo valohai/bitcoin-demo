@@ -93,9 +93,9 @@
       - name: test_ltc
         type: execution
         step: test
-      - name: deploy
+      - name: confirm_deploy
         type: execution
-        step: deploy
+        step: confirm_deploy
       - name: deploy_predictor
         type: deployment
         deployment: mydeployment
