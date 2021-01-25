@@ -50,10 +50,10 @@
       - mkdir /valohai/outputs/data
       - dd bs=1024 count=1024 </dev/urandom >/valohai/outputs/data/{parameter-value:currencypair}.csv
 - step:
-    name: deploy
+    name: confirm_deploy
     image: python:3.7
     command:
-      - echo "Deploying..."
+      - echo "Confirming tests..."
     inputs:
       - name: test_results
       - name: model
@@ -96,11 +96,11 @@
       - name: deploy
         type: execution
         step: deploy
-#      - name: deploy_predictor
-#        type: deployment
-#        deployment: mydeployment
-#        endpoints:
-#          - predictor
+      - name: deploy_predictor
+        type: deployment
+        deployment: mydeployment
+        endpoints:
+          - predictor
     edges:
       - [preprocess.parameter.lookbehind, preprocess_eth.parameter.lookbehind]
       - [preprocess.parameter.lookbehind, preprocess_xrp.parameter.lookbehind]
@@ -119,17 +119,17 @@
       - [train.output.model*, test_eth.input.model]
       - [train.output.model*, test_xrp.input.model]
       - [train.output.model*, test_ltc.input.model]
-      - [train.output.model*, deploy.input.model]
-      - [test_eth.output.results*, deploy.input.test_results]
-      - [test_xrp.output.results*, deploy.input.test_results]
-      - [test_ltc.output.results*, deploy.input.test_results]
-#      - [train.output.model*, deploy_predictor.file.predictor.model]
-#- endpoint:
-#    name: predictor
-#    description: predict volume using recent OHLCV data ("ohlcv" parameter)
-#    image: tensorflow/tensorflow:1.13.1-py3
-#    wsgi: predict_wsgi:predict_wsgi
-#    files:
-#      - name: model
-#        description: Trained model
-#        path: model.pb
+      - [train.output.model*, confirm_deploy.input.model]
+      - [test_eth.output.results*, confirm_deploy.input.test_results]
+      - [test_xrp.output.results*, confirm_deploy.input.test_results]
+      - [test_ltc.output.results*, confirm_deploy.input.test_results]
+      - [confirm_deploy.output.model*, deploy_predictor.file.predictor.model]
+- endpoint:
+    name: predictor
+    description: predict volume using recent OHLCV data ("ohlcv" parameter)
+    image: tensorflow/tensorflow:1.13.1-py3
+    wsgi: predict_wsgi:predict_wsgi
+    files:
+      - name: model
+        description: Trained model
+        path: model.pb
