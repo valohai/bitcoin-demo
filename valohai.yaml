@@ -16,6 +16,7 @@
         default: 10
     inputs:
       - name: data
+        default: https://bitcoin-demo.s3-eu-west-1.amazonaws.com/ETHEUR_1.csv
 - step:
     name: train
     image: python:3.7
@@ -103,6 +104,9 @@
 #        endpoints:
 #          - predict_ltc
     edges:
+      - [train_full.parameter.lookbehind, train_eth.parameter.lookbehind]
+      - [train_full.parameter.lookbehind, train_xrp.parameter.lookbehind]
+      - [train_full.parameter.lookbehind, train_ltc.parameter.lookbehind]
       - [preprocess_full.output.data*, train_full.input.data]
       - [preprocess_full.output.labels*, train_full.input.labels]
       - [datapull_eth.output.data*, preprocess_eth.input.data]
