@@ -191,6 +191,8 @@
       - [preprocess_xrp.output.labels*, train_xrp.input.labels]
       - [preprocess_ltc.output.data*, train_ltc.input.data]
       - [preprocess_ltc.output.labels*, train_ltc.input.labels]
+      - [train_eth.input.model*, train_xrp.input.model]
+      - [train_eth.input.model*, train_ltc.input.model]
 #      - [train_eth.output.model*, deploy_eth.file.predict_eth.model]
 #      - [train_xrp.output.model*, deploy_xrp.file.predict_xrp.model]
 #      - [train_ltc.output.model*, deploy_ltc.file.predict_ltc.model]
