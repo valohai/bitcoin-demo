@@ -3,6 +3,7 @@
     image: python:3.7
     command:
       - echo "Preprocessing..."
+      - mkdir /valohai/outputs/data
       - dd bs=1024 count=1024 </dev/urandom >/valohai/outputs/data/1.csv
       - dd bs=1024 count=1024 </dev/urandom >/valohai/outputs/data/2.csv
       - dd bs=1024 count=1024 </dev/urandom >/valohai/outputs/data/3.csv
@@ -33,6 +34,7 @@
         default: ETHEUR
     command:
       - echo "Pullingdata..."
+      - mkdir /valohai/outputs/data
       - dd bs=1024 count=1024 </dev/urandom >/valohai/outputs/data/{parameter-value:currencypair}.csv
 - step:
     name: train_transfer
