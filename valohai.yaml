@@ -104,9 +104,9 @@
 #        endpoints:
 #          - predict_ltc
     edges:
-      - [preprocess_full.parameter.lookbehind, train_eth.parameter.lookbehind]
-      - [preprocess_full.parameter.lookbehind, train_xrp.parameter.lookbehind]
-      - [preprocess_full.parameter.lookbehind, train_ltc.parameter.lookbehind]
+      - [preprocess_full.parameter.lookbehind, preprocess_eth.parameter.lookbehind]
+      - [preprocess_full.parameter.lookbehind, preprocess_xrp.parameter.lookbehind]
+      - [preprocess_full.parameter.lookbehind, preprocess_ltc.parameter.lookbehind]
       - [preprocess_full.output.data*, train_full.input.data]
       - [preprocess_full.output.labels*, train_full.input.labels]
       - [datapull_eth.output.data*, preprocess_eth.input.data]
