@@ -151,3 +151,75 @@
 #      - name: model
 #        description: Trained model
 #        path: model.pb
+- pipeline:
+    name: transfer-pipeline
+    nodes:
+      - name: datapull_eth
+        type: execution
+        step: datapull
+      - name: datapull_xrp
+        type: execution
+        step: datapull
+      - name: datapull_ltc
+        type: execution
+        step: datapull
+      - name: train_eth
+        type: execution
+        step: train_transfer
+      - name: train_xrp
+        type: execution
+        step: train_transfer
+      - name: train_ltc
+        type: execution
+        step: train_transfer
+      - name: preprocess_eth
+        type: execution
+        step: preprocess
+      - name: preprocess_xrp
+        type: execution
+        step: preprocess
+      - name: preprocess_ltc
+        type: execution
+        step: preprocess
+    edges:
+      - [preprocess_eth.parameter.lookbehind, preprocess_xrp.parameter.lookbehind]
+      - [preprocess_eth.parameter.lookbehind, preprocess_ltc.parameter.lookbehind]
+      - [datapull_eth.output.data*, preprocess_eth.input.data]
+      - [datapull_xrp.output.data*, preprocess_xrp.input.data]
+      - [datapull_ltc.output.data*, preprocess_ltc.input.data]
+      - [preprocess_eth.output.data*, train_eth.input.data]
+      - [preprocess_eth.output.labels*, train_eth.input.labels]
+      - [preprocess_xrp.output.data*, train_xrp.input.data]
+      - [preprocess_xrp.output.labels*, train_xrp.input.labels]
+      - [preprocess_ltc.output.data*, train_ltc.input.data]
+      - [preprocess_ltc.output.labels*, train_ltc.input.labels]
+#      - [train_eth.output.model*, deploy_eth.file.predict_eth.model]
+#      - [train_xrp.output.model*, deploy_xrp.file.predict_xrp.model]
+#      - [train_ltc.output.model*, deploy_ltc.file.predict_ltc.model]
+#- endpoint:
+#    name: predict_eth
+#    description: predict ETH volume using recent OHLCV data ("ohlcv" parameter)
+#    image: tensorflow/tensorflow:1.13.1-py3
+#    wsgi: predict_wsgi:predict_wsgi
+#    files:
+#      - name: model
+#        description: Trained model
+#        path: model.pb
+#- endpoint:
+#    name: predict_xrp
+#    description: predict XRP volume using recent OHLCV data ("ohlcv" parameter)
+#    image: tensorflow/tensorflow:1.13.1-py3
+#    wsgi: predict_wsgi:predict_wsgi
+#    files:
+#      - name: model
+#        description: Trained model
+#        path: model.pb
+#- endpoint:
+#    name: predict_ltc
+#    description: predict LTC volume using recent OHLCV data ("ohlcv" parameter)
+#    image: tensorflow/tensorflow:1.13.1-py3
+#    wsgi: predict_wsgi:predict_wsgi
+#    files:
+#      - name: model
+#        description: Trained model
+#        path: model.pb
