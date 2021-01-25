@@ -27,6 +27,17 @@
       - name: data
       - name: labels
 - step:
+    name: test
+    image: python:3.7
+    command:
+      - echo "Testing..."
+      - mkdir /valohai/outputs/results
+      - dd bs=1024 count=1024 </dev/urandom >/valohai/outputs/results/tests.json
+    inputs:
+      - name: model
+      - name: data
+      - name: labels
+- step:
     name: datapull
     image: python:3.7
     parameters:
@@ -39,26 +50,20 @@
       - mkdir /valohai/outputs/data
       - dd bs=1024 count=1024 </dev/urandom >/valohai/outputs/data/{parameter-value:currencypair}.csv
 - step:
-    name: train_transfer
+    name: deploy
     image: python:3.7
-    parameters:
-      - name: currencypair
-        type: string
-        pass-as: --currencypair={v}
-        default: ETHEUR
     command:
-      - echo "Transfer training..."
+      - echo "Deploying..."
     inputs:
+      - name: test_results
       - name: model
-      - name: data
-      - name: labels
 - pipeline:
     name: full-pipeline
     nodes:
-      - name: preprocess_full
+      - name: preprocess
         type: execution
         step: preprocess
-      - name: train_full
+      - name: train
         type: execution
         step: train
       - name: datapull_eth
@@ -70,15 +75,6 @@
       - name: datapull_ltc
         type: execution
         step: datapull
-      - name: train_eth
-        type: execution
-        step: train_transfer
-      - name: train_xrp
-        type: execution
-        step: train_transfer
-      - name: train_ltc
-        type: execution
-        step: train_transfer
       - name: preprocess_eth
         type: execution
         step: preprocess
@@ -88,137 +84,49 @@
       - name: preprocess_ltc
         type: execution
         step: preprocess
-#      - name: deploy_eth
+      - name: test_eth
+        type: execution
+        step: test
+      - name: test_xrp
+        type: execution
+        step: test
+      - name: test_ltc
+        type: execution
+        step: test
+      - name: deploy
+        type: execution
+        step: deploy
+#      - name: deploy_predictor
 #        type: deployment
 #        deployment: mydeployment
 #        endpoints:
-#          - predict_eth
-#      - name: deploy_xrp
-#        type: deployment
-#        deployment: mydeployment
-#        endpoints:
-#          - predict_xrp
-#      - name: deploy_ltc
-#        type: deployment
-#        deployment: mydeployment
-#        endpoints:
-#          - predict_ltc
+#          - predictor
     edges:
-      - [preprocess_full.parameter.lookbehind, preprocess_eth.parameter.lookbehind]
-      - [preprocess_full.parameter.lookbehind, preprocess_xrp.parameter.lookbehind]
-      - [preprocess_full.parameter.lookbehind, preprocess_ltc.parameter.lookbehind]
-      - [preprocess_full.output.data*, train_full.input.data]
-      - [preprocess_full.output.labels*, train_full.input.labels]
+      - [preprocess.parameter.lookbehind, preprocess_eth.parameter.lookbehind]
+      - [preprocess.parameter.lookbehind, preprocess_xrp.parameter.lookbehind]
+      - [preprocess.parameter.lookbehind, preprocess_ltc.parameter.lookbehind]
+      - [preprocess.output.data*, train.input.data]
+      - [preprocess.output.labels*, train.input.labels]
       - [datapull_eth.output.data*, preprocess_eth.input.data]
       - [datapull_xrp.output.data*, preprocess_xrp.input.data]
       - [datapull_ltc.output.data*, preprocess_ltc.input.data]
-      - [preprocess_eth.output.data*, train_eth.input.data]
-      - [preprocess_eth.output.labels*, train_eth.input.labels]
-      - [train_full.output.model*, train_eth.input.model]
-      - [preprocess_xrp.output.data*, train_xrp.input.data]
-      - [preprocess_xrp.output.labels*, train_xrp.input.labels]
-      - [train_full.output.model*, train_xrp.input.model]
-      - [preprocess_ltc.output.data*, train_ltc.input.data]
-      - [preprocess_ltc.output.labels*, train_ltc.input.labels]
-      - [train_full.output.model*, train_ltc.input.model]
-#      - [train_eth.output.model*, deploy_eth.file.predict_eth.model]
-#      - [train_xrp.output.model*, deploy_xrp.file.predict_xrp.model]
-#      - [train_ltc.output.model*, deploy_ltc.file.predict_ltc.model]
+      - [preprocess_eth.output.data*, test_eth.input.data]
+      - [preprocess_eth.output.labels*, test_eth.input.labels]
+      - [preprocess_xrp.output.data*, test_xrp.input.data]
+      - [preprocess_xrp.output.labels*, test_xrp.input.labels]
+      - [preprocess_ltc.output.data*, test_ltc.input.data]
+      - [preprocess_ltc.output.labels*, test_ltc.input.labels]
+      - [train.output.model*, test_eth.input.model]
+      - [train.output.model*, test_xrp.input.model]
+      - [train.output.model*, test_ltc.input.model]
+      - [train.output.model*, deploy.input.model]
+      - [test_eth.output.results*, deploy.input.test_results]
+      - [test_xrp.output.results*, deploy.input.test_results]
+      - [test_ltc.output.results*, deploy.input.test_results]
+#      - [train.output.model*, deploy_predictor.file.predictor.model]
 #- endpoint:
-#    name: predict_eth
-#    description: predict ETH volume using recent OHLCV data ("ohlcv" parameter)
-#    image: tensorflow/tensorflow:1.13.1-py3
-#    wsgi: predict_wsgi:predict_wsgi
-#    files:
-#      - name: model
-#        description: Trained model
-#        path: model.pb
-#- endpoint:
-#    name: predict_xrp
-#    description: predict XRP volume using recent OHLCV data ("ohlcv" parameter)
-#    image: tensorflow/tensorflow:1.13.1-py3
-#    wsgi: predict_wsgi:predict_wsgi
-#    files:
-#      - name: model
-#        description: Trained model
-#        path: model.pb
-#- endpoint:
-#    name: predict_ltc
-#    description: predict LTC volume using recent OHLCV data ("ohlcv" parameter)
-#    image: tensorflow/tensorflow:1.13.1-py3
-#    wsgi: predict_wsgi:predict_wsgi
-#    files:
-#      - name: model
-#        description: Trained model
-#        path: model.pb
-- pipeline:
-    name: transfer-pipeline
-    nodes:
-      - name: datapull_eth
-        type: execution
-        step: datapull
-      - name: datapull_xrp
-        type: execution
-        step: datapull
-      - name: datapull_ltc
-        type: execution
-        step: datapull
-      - name: train_eth
-        type: execution
-        step: train_transfer
-      - name: train_xrp
-        type: execution
-        step: train_transfer
-      - name: train_ltc
-        type: execution
-        step: train_transfer
-      - name: preprocess_eth
-        type: execution
-        step: preprocess
-      - name: preprocess_xrp
-        type: execution
-        step: preprocess
-      - name: preprocess_ltc
-        type: execution
-        step: preprocess
-    edges:
-      - [preprocess_eth.parameter.lookbehind, preprocess_xrp.parameter.lookbehind]
-      - [preprocess_eth.parameter.lookbehind, preprocess_ltc.parameter.lookbehind]
-      - [datapull_eth.output.data*, preprocess_eth.input.data]
-      - [datapull_xrp.output.data*, preprocess_xrp.input.data]
-      - [datapull_ltc.output.data*, preprocess_ltc.input.data]
-      - [preprocess_eth.output.data*, train_eth.input.data]
-      - [preprocess_eth.output.labels*, train_eth.input.labels]
-      - [preprocess_xrp.output.data*, train_xrp.input.data]
-      - [preprocess_xrp.output.labels*, train_xrp.input.labels]
-      - [preprocess_ltc.output.data*, train_ltc.input.data]
-      - [preprocess_ltc.output.labels*, train_ltc.input.labels]
-      - [train_eth.input.model*, train_xrp.input.model]
-      - [train_eth.input.model*, train_ltc.input.model]
-#      - [train_eth.output.model*, deploy_eth.file.predict_eth.model]
-#      - [train_xrp.output.model*, deploy_xrp.file.predict_xrp.model]
-#      - [train_ltc.output.model*, deploy_ltc.file.predict_ltc.model]
-#- endpoint:
-#    name: predict_eth
-#    description: predict ETH volume using recent OHLCV data ("ohlcv" parameter)
-#    image: tensorflow/tensorflow:1.13.1-py3
-#    wsgi: predict_wsgi:predict_wsgi
-#    files:
-#      - name: model
-#        description: Trained model
-#        path: model.pb
-#- endpoint:
-#    name: predict_xrp
-#    description: predict XRP volume using recent OHLCV data ("ohlcv" parameter)
-#    image: tensorflow/tensorflow:1.13.1-py3
-#    wsgi: predict_wsgi:predict_wsgi
-#    files:
-#      - name: model
-#        description: Trained model
-#        path: model.pb
-#- endpoint:
-#    name: predict_ltc
-#    description: predict LTC volume using recent OHLCV data ("ohlcv" parameter)
+#    name: predictor
+#    description: predict volume using recent OHLCV data ("ohlcv" parameter)
 #    image: tensorflow/tensorflow:1.13.1-py3
 #    wsgi: predict_wsgi:predict_wsgi
 #    files:
