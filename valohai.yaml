@@ -98,7 +98,7 @@
         step: confirm_deploy
       - name: deploy_predictor
         type: deployment
-        deployment: mydeployment
+        deployment: predictor
         endpoints:
           - predictor
     edges:
