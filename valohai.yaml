@@ -182,6 +182,8 @@
         type: execution
         step: preprocess
     edges:
+      - [preprocess_eth.parameter.lookbehind, preprocess_xrp.parameter.lookbehind]
+      - [preprocess_eth.parameter.lookbehind, preprocess_ltc.parameter.lookbehind]
       - [datapull_eth.output.data*, preprocess_eth.input.data]
       - [datapull_xrp.output.data*, preprocess_xrp.input.data]
       - [datapull_ltc.output.data*, preprocess_ltc.input.data]
